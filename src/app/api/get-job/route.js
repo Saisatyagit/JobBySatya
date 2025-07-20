@@ -1,10 +1,8 @@
-
-
-import "@/app/utils/models/JobPost"; // required to populate jobId
 import { NextResponse } from "next/server";
-import Dbconnect from "@/app/utils/dbConnect";
-import Apply from "@/app/utils/models/Apply";
+import Dbconnect from "../../../utils/dbConnect";
+import Apply from "../../../utils/models/Apply";
 
+// ✅ This route fetches the job details based on applicant email
 export async function GET(req) {
   await Dbconnect();
 
@@ -12,14 +10,20 @@ export async function GET(req) {
   const email = searchParams.get("email");
 
   if (!email) {
-    return NextResponse.json({ success: false, error: "Email is required" }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: "Email is required" },
+      { status: 400 }
+    );
   }
 
   try {
     const application = await Apply.findOne({ email }).populate("jobId");
 
     if (!application || !application.jobId) {
-      return NextResponse.json({ success: false, error: "No job found for this email" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "No job found for this email" },
+        { status: 404 }
+      );
     }
 
     const job = application.jobId;
@@ -35,7 +39,11 @@ export async function GET(req) {
     });
   } catch (err) {
     console.error("Error fetching job:", err);
-    return NextResponse.json({ success: false, error: "Something went wrong" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Something went wrong" },
+      { status: 500 }
+    );
   }
 }
+
 
