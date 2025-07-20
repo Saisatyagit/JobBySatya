@@ -1,0 +1,28 @@
+/* app/job-details/jobdetails.module.css */
+
+.pageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+.jobCard {
+  max-width: 800px;
+  width: 100%;
+  padding: 30px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  transition: box-shadow 0.3s;
+}
+
+.jobCard:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+}

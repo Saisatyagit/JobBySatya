@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💼 Jobify – AI-Powered Job Portal 🚀
 
-## Getting Started
+Jobify is a full-featured job application platform that combines modern web development with AI capabilities. Users can discover jobs, apply with their resume, and even analyze how well their resume matches a job using an ATS scoring system.
 
-First, run the development server:
+---
+
+## 🔥 Features
+
+### 🧑‍💼 For Job Seekers
+- 🔐 Secure Login/Register (Authentication)
+- 📄 Resume Upload & Analysis (PDF)
+- 🤖 AI ATS Score + Improvement Suggestions
+- 📝 Apply to Jobs (Even with same email for different jobs)
+- 📌 Save Favorite Jobs
+- 📈 View Application Status
+- 🔍 Fuzzy Job Search (Fuse.js)
+- 🧑‍💻 Responsive User Profile Page
+
+### 👨‍💼 For Admins
+- 📥 View All Job Applications
+- 📎 Download Resumes
+- 📨 (Planned) Email Notifications Based on Skills
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology     | Description                 |
+|----------------|-----------------------------|
+| **Frontend**   | React.js, Next.js, Bootstrap |
+| **Backend**    | Node.js, Express.js          |
+| **Database**   | MongoDB                      |
+| **Auth**       | NextAuth                     |
+| **AI**         | OpenAI API (Resume Scoring)  |
+| **Search**     | Fuse.js                      |
+
+---
+
+## 📸 Screenshots
+> *(Add screenshots of your Jobify interface if available)*  
+Example: Home Page, Apply Form, AI Feedback Panel, Admin Dashboard, etc.
+
+---
+
+## 🚀 How to Run Locally
 
 ```bash
+git clone https://github.com/your-username/jobify.git
+cd jobify
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
