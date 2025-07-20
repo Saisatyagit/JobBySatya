@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import Dbconnect from "../../../utils/dbConnect";
-import Apply from "../../../utils/models/Apply";
+
+import Apply from "@/app/utils/models/Apply";
+import Dbconnect from "@/app/utils/dbConnect";
+
 
 // ✅ This route fetches the job details based on applicant email
 export async function GET(req) {
