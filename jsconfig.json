@@ -1,10 +1,11 @@
 
 {
   "compilerOptions": {
-    "baseUrl": "src",
+    "baseUrl": ".",               // This is required!
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["src/*"]
     }
   }
 }
+
 
