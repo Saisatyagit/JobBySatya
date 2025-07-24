@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { Sun, Moon } from "lucide-react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function ResumeBuilder() {
@@ -9,27 +8,30 @@ export default function ResumeBuilder() {
     projects: "", experience: "", summary: "", github: "",
     linkedin: "", portfolio: "", profileImage: "", jobDescription: ""
   });
-
-  const [editField, setEditField] = useState(null);
-  const [template, setTemplate] = useState("classic");
+  const [template, setTemplate] = useState("template1");
   const [darkMode, setDarkMode] = useState(false);
   const [bgColor, setBgColor] = useState("white");
   const [atsScore, setAtsScore] = useState(0);
   const [showAts, setShowAts] = useState(true);
-  const [excludedSections, setExcludedSections] = useState([]);
+  const [visibleSections, setVisibleSections] = useState(new Set(Object.keys(formData)));
   const previewRef = useRef(null);
 
+  const templates = ["template1", "template2", "template3", "template4", "template5", "template6", "template7", "template8"];
+  const backgroundColors = ["white", "#f5f5f5", "#e0f7fa", "#fff3e0", "#f3e5f5", "#ede7f6"];
+
   useEffect(() => {
-    if (darkMode) {
-      setBgColor("#1e1e1e");
-    } else {
-      setBgColor("white");
-    }
-  }, [darkMode]);
+    const saved = localStorage.getItem("resumeData");
+    if (saved) setFormData(JSON.parse(saved));
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("resumeData", JSON.stringify(formData));
+    setAtsScore(calculateAtsScore());
   }, [formData]);
+
+  useEffect(() => {
+    setBgColor(darkMode ? "#1e1e1e" : "white");
+  }, [darkMode]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -40,6 +42,33 @@ export default function ResumeBuilder() {
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleTabKey = (e) => {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const { name } = e.target;
+      const start = e.target.selectionStart;
+      const end = e.target.selectionEnd;
+      const tabs = e.shiftKey ? 1 : 1; // You can make this dynamic later if needed
+      const tabSpaces = "\t".repeat(tabs);
+      const value = formData[name];
+      const newValue = value.substring(0, start) + tabSpaces + value.substring(end);
+      setFormData((prev) => ({ ...prev, [name]: newValue }));
+      setTimeout(() => {
+        e.target.selectionStart = e.target.selectionEnd = start + tabs;
+      }, 0);
+    }
+  };
+
+  const toggleSectionVisibility = (field) => {
+    const updated = new Set(visibleSections);
+    if (updated.has(field)) {
+      updated.delete(field);
+    } else {
+      updated.add(field);
+    }
+    setVisibleSections(updated);
   };
 
   const validateForm = () => {
@@ -62,14 +91,11 @@ export default function ResumeBuilder() {
       if (formData[field]?.length > 20) score += 10;
     });
     keywords.forEach((kw) => {
-      if (formData.skills.includes(kw) || formData.summary.includes(kw)) score += 5;
+      const regex = new RegExp(`\\b${kw}\\b`, "i");
+      if (regex.test(formData.skills) || regex.test(formData.summary)) score += 5;
     });
     return Math.min(score, 100);
   };
-
-  useEffect(() => {
-    setAtsScore(calculateAtsScore());
-  }, [formData]);
 
   const handleDownload = async () => {
     if (!validateForm()) return;
@@ -79,162 +105,141 @@ export default function ResumeBuilder() {
       margin: 0,
       filename: 'Resume.pdf',
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
+      html2canvas: { scale: 3, useCORS: true, scrollY: 0 },
       jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all'] }
     };
     await html2pdf().set(opt).from(previewRef.current).save();
     setTimeout(() => setShowAts(true), 1000);
   };
 
   const handleReset = () => {
-    const emptyForm = Object.fromEntries(Object.keys(formData).map(key => [key, ""]));
-    setFormData(emptyForm);
-    localStorage.removeItem("resumeData");
+    if (confirm("Are you sure you want to reset the form?")) {
+      const emptyForm = Object.fromEntries(Object.keys(formData).map(key => [key, ""]));
+      setFormData(emptyForm);
+      localStorage.removeItem("resumeData");
+      setVisibleSections(new Set(Object.keys(formData)));
+    }
   };
 
-  const toggleSection = (section) => {
-    setExcludedSections((prev) =>
-      prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
+  const renderFormatted = (text) => {
+    return text?.split("\n").map((line, i) =>
+      line.split(',').map((part, j) => (
+        <div key={`${i}-${j}`} style={{ marginLeft: `${(part.match(/^\t+/)?.[0]?.length || 0) * 20}px` }}>
+          {part.trim()}
+        </div>
+      ))
     );
   };
 
-  const fontClass = {
-    classic: "",
-    modern: "fst-italic text-secondary",
-    elegant: "fw-light fst-italic",
-    compact: "small",
-    bold: "fw-bold fs-6",
-    creative: "text-primary fw-semibold border-start border-5 ps-3",
-    clean: "text-dark fw-normal"
-  }[template] || "";
+  const renderSection = (title, field) => {
+    const content = formData[field];
+    if (!visibleSections.has(field)) return null;
+    if (!content?.trim()) return null;
+    return (
+      <div className="mb-2">
+        <strong>{title}:</strong>
+        {renderFormatted(content)}
+        <hr />
+      </div>
+    );
+  };
 
   return (
     <div className={darkMode ? "bg-dark text-light" : "bg-light text-dark"} style={{ padding: "40px", minHeight: "100vh" }}>
       <div className="container">
         <h2 className="text-center mb-4">📄 Resume Builder</h2>
 
-        <div className="d-flex justify-content-between align-items-center mb-4 gap-3">
-          <button onClick={() => setDarkMode(!darkMode)} className="btn btn-outline-secondary">
-            {darkMode ? <Sun color="white" /> : <Moon color="black" />}
-          </button>
-
-          <select value={template} onChange={(e) => setTemplate(e.target.value)} className="form-select w-auto">
-            {["classic", "modern", "elegant", "compact", "bold", "creative", "clean"].map((style) => (
-              <option key={style} value={style}>{style.charAt(0).toUpperCase() + style.slice(1)}</option>
-            ))}
-          </select>
-
-          <select value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="form-select w-auto">
-            {[{ name: "White", value: "white" }, { name: "Light Gray", value: "#f8f9fa" }, { name: "Cool Blue", value: "#f0f4f8" }, { name: "Soft Yellow", value: "#fffbe6" }].map((color, i) => (
-              <option key={i} value={color.value}>{color.name}</option>
-            ))}
-          </select>
-        </div>
-
         <div className="row">
           <div className="col-md-6">
-            {["name", "email", "phone", "education", "skills", "projects", "experience", "summary", "github", "linkedin", "portfolio"].map((field) => (
-              <div className="mb-3" key={field}>
-                <label className="form-label text-capitalize">{field}</label>
-                <input
-                  type="text"
+            {Object.keys(formData).filter(f => f !== "profileImage").map((field) => (
+              <div className="mb-2" key={field}>
+                <label className="form-label text-capitalize">
+                  <input
+                    type="checkbox"
+                    className="form-check-input me-2"
+                    checked={visibleSections.has(field)}
+                    onChange={() => toggleSectionVisibility(field)}
+                  />
+                  {field}
+                </label>
+                <textarea
                   name={field}
                   className="form-control"
                   onChange={handleChange}
+                  onKeyDown={handleTabKey}
                   value={formData[field] || ""}
+                  rows={field === 'summary' || field === 'experience' || field === 'projects' ? 3 : 1}
                 />
               </div>
             ))}
             <div className="mb-3">
               <label className="form-label">Profile Image</label>
-              <input type="file" name="profileImage" className="form-control" onChange={handleChange} />
+              <input type="file" accept="image/*" name="profileImage" className="form-control" onChange={handleChange} />
             </div>
 
-            <div className="mb-3">
-              <label className="form-label">Exclude Sections</label>
-              {["summary", "education", "skills", "projects", "experience"].map((section) => (
-                <div key={section}>
-                  <input
-                    type="checkbox"
-                    checked={!excludedSections.includes(section)}
-                    onChange={() => toggleSection(section)}
-                  /> <label className="ms-1 text-capitalize">{section}</label>
-                </div>
+            <div className="mb-3 d-flex flex-wrap gap-2">
+              <label className="form-label me-2">🎨 Background:</label>
+              {backgroundColors.map((color, i) => (
+                <button key={i} onClick={() => setBgColor(color)} className="btn btn-sm" style={{ backgroundColor: color, width: 30, height: 30 }} />
               ))}
+            </div>
+
+            <div className="mb-3 d-flex flex-wrap gap-2">
+              <label className="form-label me-2">🖋 Template:</label>
+              {templates.map((t, i) => (
+                <button key={i} onClick={() => setTemplate(t)} className="btn btn-outline-secondary btn-sm">
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            <div className="form-check form-switch">
+              <input className="form-check-input" type="checkbox" onChange={() => setDarkMode(!darkMode)} />
+              <label className="form-check-label">🌗 Dark Mode</label>
             </div>
           </div>
 
-          <div className={`col-md-6 ${fontClass}`} ref={previewRef} style={{ border: "1px solid #dee2e6", padding: "40px", borderRadius: "10px", backgroundColor: bgColor, minHeight: "1122px", width: "794px", color: darkMode ? "white" : "black" }}>
-            {showAts && <div className="mb-3"><strong>ATS Score:</strong> {atsScore} / 100</div>}
-            <div className="d-flex flex-column align-items-center gap-3 mb-3">
-              {formData.profileImage && <img src={formData.profileImage} alt="Profile" className="rounded-circle" style={{ width: "80px" }} />}
-              <div className="text-center">
-                <h4>{formData.name}</h4>
-                <p className="small mb-1">📧 {formData.email} | 📞 {formData.phone}</p>
-                <p className="small mb-0">
-                  {formData.github && <span>{formData.github} | </span>}
-                  {formData.linkedin && <span>{formData.linkedin} | </span>}
-                  {formData.portfolio && <span>{formData.portfolio}</span>}
-                </p>
-              </div>
+          <div className="col-md-6">
+            <div ref={previewRef} className={`p-4 rounded ${template}`} style={{ backgroundColor: bgColor, border: "1px solid #ccc", minHeight: "1122px" }}>
+              {showAts && <div><strong>ATS Score:</strong> {atsScore} / 100</div>}
+              {formData.profileImage && <div className="text-center"><img src={formData.profileImage} alt="Profile" style={{ width: "80px", borderRadius: "50%" }} /></div>}
+              <h4 className="text-center mt-2">{formData.name}</h4>
+              <p className="text-center">{formData.email} | {formData.phone}</p>
+              <p className="text-center">
+                {formData.github && <span>{formData.github} | </span>}
+                {formData.linkedin && <span>{formData.linkedin} | </span>}
+                {formData.portfolio && <span>{formData.portfolio}</span>}
+              </p>
+              <hr />
+              {renderSection("Summary", "summary")}
+              {renderSection("Education", "education")}
+              {renderSection("Skills", "skills")}
+              {renderSection("Projects", "projects")}
+              {renderSection("Experience", "experience")}
             </div>
-            {!excludedSections.includes("summary") && <><hr /><div><strong>Summary:</strong> {formData.summary}</div></>}
-            {!excludedSections.includes("education") && <><hr /><div><strong>Education:</strong> {formData.education}</div></>}
-            {!excludedSections.includes("skills") && <><hr /><div><strong>Skills:</strong> {formData.skills}</div></>}
-            {!excludedSections.includes("projects") && <><hr /><div><strong>Projects:</strong> {formData.projects}</div></>}
-            {!excludedSections.includes("experience") && <><hr /><div><strong>Experience:</strong> {formData.experience}</div></>}
           </div>
         </div>
 
-        <div className="text-center mt-4 d-flex justify-content-center gap-3">
-          <button onClick={handleDownload} className="btn btn-primary">⬇️ Download PDF</button>
-          <button onClick={handleReset} className="btn btn-danger">🗑️ Reset Form</button>
+        <div className="text-center mt-4">
+          <button onClick={handleDownload} className="btn btn-primary me-2">⬇️ Download PDF</button>
+          <button onClick={handleReset} className="btn btn-danger">🗑️ Reset</button>
         </div>
 
         <style jsx global>{`
-          @media print {
-            .page-break {
-              page-break-after: always;
-            }
-          }
+          .template1 { font-family: Arial, sans-serif; }
+          .template2 { font-family: Georgia, serif; color: #3e3e3e; }
+          .template3 { font-family: 'Courier New', monospace; font-size: 13px; }
+          .template4 { font-family: 'Segoe UI', Tahoma; line-height: 1.4; }
+          .template5 { font-family: Verdana; font-size: 14px; border-left: 5px solid #007bff; padding-left: 15px; }
+          .template6 { font-family: 'Lucida Console'; background: #f0f0f0; padding: 10px; }
+          .template7 { font-family: 'Times New Roman'; font-style: italic; }
+          .template8 { font-family: 'Trebuchet MS'; font-weight: 500; }
         `}</style>
       </div>
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// (Remaining components unchanged: Input, TextArea, Section, etc.)
-
-
 
 
 

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import JobPost from "@/app/utils/models/JobPost"; 
 
 import Apply from "@/app/utils/models/Apply";
 import Dbconnect from "@/app/utils/dbConnect";
