@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import JobPost from "@/app/utils/models/JobPost";
 import Apply from "@/app/utils/models/Apply";
@@ -47,6 +46,7 @@ export async function GET(req) {
     );
   }
 }
+
 
 
 
