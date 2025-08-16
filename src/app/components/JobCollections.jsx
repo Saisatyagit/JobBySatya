@@ -18,7 +18,7 @@ function JobCollections() {
 
   const fetchJobs = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/add-job`);
+      const response = await fetch(`api/admin/add-job`);
       if (!response.ok) throw new Error("Failed to fetch jobs");
 
       const data = await response.json();
