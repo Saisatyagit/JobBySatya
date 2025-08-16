@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import JobPost from "@/app/utils/models/JobPost";
-import Apply from "@/app/utils/models/Apply";
-import Dbconnect from "@/app/utils/dbConnect";
+import JobPost from "@/app/utils/models/Jobpost";   // ✅ matches Jobpost.jsx
+import Apply from "@/app/utils/models/Apply";       // ✅ matches Apply.js / Apply.jsx
+import Dbconnect from "@/app/utils/dbConnect";      // ✅ matches dbConnect.js
 
 // ✅ This route fetches the job details based on applicant email
 export async function GET(req) {
@@ -46,6 +46,8 @@ export async function GET(req) {
     );
   }
 }
+
+
 
 
 
