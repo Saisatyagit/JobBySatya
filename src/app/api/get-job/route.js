@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import JobPost from "@/app/utils/models/Jobpost";   // ✅ matches Jobpost.jsx
+import JobPost from "@/app/utils/models/Jobpost";
 import Apply from "@/app/utils/models/Apply";       // ✅ matches Apply.js / Apply.jsx
 import Dbconnect from "@/app/utils/dbConnect";      // ✅ matches dbConnect.js
 

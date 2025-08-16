@@ -16,6 +16,10 @@ const ApplySchema = new mongoose.Schema({
     default: "Pending",
   },
   appliedAt: { type: Date, default: Date.now },
+  apply: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Apply" // Reference to the Apply model
+  }
 });
 
 

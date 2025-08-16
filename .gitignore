@@ -53,3 +53,5 @@ next-env.d.ts
 # 📂 Public Uploads (Optional)
 # ----------------------------
 /public/uploads/
+
+/public/resumes/

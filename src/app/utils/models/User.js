@@ -23,7 +23,7 @@ const UserSchema= new mongoose.Schema({
     },
     apply:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Application" // Reference to the Application model
+        ref: "Apply" // Reference to the Apply model
     }
 });
 
