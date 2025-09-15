@@ -1,18 +1,18 @@
-
 import React from "react";
-import Index from './components';
-import JobCollections from './components/JobCollections';
+import Index from "./components";
+import JobCollections from "./components/JobCollections";
+import Footer from "./components/Footer";
 
 function Page() {
   return (
     <div
-      className="min-vh-100 py-4 px-2 d-flex justify-content-center align-items-start"
+      className="min-vh-100 py-4 px-2 d-flex flex-column justify-content-start align-items-center"
       style={{
         background: "linear-gradient(to right, #0f2027, #203a43, #2c5364)",
         color: "white",
       }}
     >
-      <div className="container">
+      <div className="container flex-grow-1">
         {/* Responsive Glassmorphism Card */}
         <div
           className="p-4 rounded-4 shadow-lg"
@@ -35,12 +35,17 @@ function Page() {
             </div>
           </div>
         </div>
+        <Footer/>
       </div>
+
+      {/* Footer stays outside the card */}
+     
     </div>
   );
 }
 
 export default Page;
+
 
 
 
