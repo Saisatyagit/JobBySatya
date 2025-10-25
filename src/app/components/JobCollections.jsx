@@ -18,7 +18,7 @@ function JobCollections() {
 
   const fetchJobs = async () => {
     try {
-      const response = await fetch(`api/admin/add-job`);
+      const response = await fetch(`/api/admin/add-job`); // ✅ Fixed: Added leading slash
       if (!response.ok) throw new Error("Failed to fetch jobs");
 
       const data = await response.json();
@@ -28,6 +28,7 @@ function JobCollections() {
       setFilteredJobs(jobs);
     } catch (err) {
       setError("Failed to load jobs");
+      console.error("Error fetching jobs:", err); // ✅ Added error logging
     } finally {
       setLoading(false);
     }
@@ -273,6 +274,7 @@ function JobCollections() {
 }
 
 export default JobCollections;
+
 
 
 

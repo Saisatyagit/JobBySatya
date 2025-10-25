@@ -5,8 +5,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 export default function ResumeBuilder() {
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", education: "", skills: "",
-    projects: "", experience: "", summary: "", github: "",
-    linkedin: "", portfolio: "", profileImage: "", jobDescription: ""
+    projects: "", experience: "", summary: "", certifications: "",
+    github: "", linkedin: "", portfolio: "", profileImage: "", jobDescription: ""
   });
   const [template, setTemplate] = useState("template1");
   const [darkMode, setDarkMode] = useState(false);
@@ -14,9 +14,10 @@ export default function ResumeBuilder() {
   const [atsScore, setAtsScore] = useState(0);
   const [showAts, setShowAts] = useState(true);
   const [visibleSections, setVisibleSections] = useState(new Set(Object.keys(formData)));
+  const [loadingSummary, setLoadingSummary] = useState(false);
   const previewRef = useRef(null);
 
-  const templates = ["template1", "template2", "template3", "template4", "template5", "template6", "template7", "template8"];
+  const templates = ["template1", "template2", "template3", "template4", "template5"];
   const backgroundColors = ["white", "#f5f5f5", "#e0f7fa", "#fff3e0", "#f3e5f5", "#ede7f6"];
 
   useEffect(() => {
@@ -44,30 +45,10 @@ export default function ResumeBuilder() {
     }
   };
 
-  const handleTabKey = (e) => {
-    if (e.key === "Tab") {
-      e.preventDefault();
-      const { name } = e.target;
-      const start = e.target.selectionStart;
-      const end = e.target.selectionEnd;
-      const tabs = e.shiftKey ? 1 : 1; // You can make this dynamic later if needed
-      const tabSpaces = "\t".repeat(tabs);
-      const value = formData[name];
-      const newValue = value.substring(0, start) + tabSpaces + value.substring(end);
-      setFormData((prev) => ({ ...prev, [name]: newValue }));
-      setTimeout(() => {
-        e.target.selectionStart = e.target.selectionEnd = start + tabs;
-      }, 0);
-    }
-  };
-
   const toggleSectionVisibility = (field) => {
     const updated = new Set(visibleSections);
-    if (updated.has(field)) {
-      updated.delete(field);
-    } else {
-      updated.add(field);
-    }
+    if (updated.has(field)) updated.delete(field);
+    else updated.add(field);
     setVisibleSections(updated);
   };
 
@@ -86,7 +67,7 @@ export default function ResumeBuilder() {
   const calculateAtsScore = () => {
     let score = 0;
     const keywords = ['JavaScript', 'React', 'Node', 'HTML', 'CSS', 'MongoDB', 'Git'];
-    const fields = ['summary', 'skills', 'projects', 'experience'];
+    const fields = ['summary', 'skills', 'projects', 'experience', 'certifications'];
     fields.forEach((field) => {
       if (formData[field]?.length > 20) score += 10;
     });
@@ -122,24 +103,41 @@ export default function ResumeBuilder() {
     }
   };
 
-  const renderFormatted = (text) => {
-    return text?.split("\n").map((line, i) =>
-      line.split(',').map((part, j) => (
-        <div key={`${i}-${j}`} style={{ marginLeft: `${(part.match(/^\t+/)?.[0]?.length || 0) * 20}px` }}>
-          {part.trim()}
-        </div>
-      ))
-    );
+  const generateSummary = async () => {
+    try {
+      setLoadingSummary(true);
+      const res = await fetch("/api/generateSummary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skills: formData.skills, projects: formData.projects }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setFormData((prev) => ({ ...prev, summary: data.summary }));
+      } else {
+        alert("Error generating summary.");
+      }
+    } catch (err) {
+      alert("Error generating summary.");
+    } finally {
+      setLoadingSummary(false);
+    }
   };
+
+  const renderFormatted = (text) =>
+    text?.split("\n").map((line, i) => (
+      <div key={i} style={{ marginBottom: "4px", whiteSpace: "pre-wrap" }}>
+        {line.trim()}
+      </div>
+    ));
 
   const renderSection = (title, field) => {
     const content = formData[field];
-    if (!visibleSections.has(field)) return null;
-    if (!content?.trim()) return null;
+    if (!visibleSections.has(field) || !content?.trim()) return null;
     return (
       <div className="mb-2">
         <strong>{title}:</strong>
-        {renderFormatted(content)}
+        <div>{renderFormatted(content)}</div>
         <hr />
       </div>
     );
@@ -167,12 +165,17 @@ export default function ResumeBuilder() {
                   name={field}
                   className="form-control"
                   onChange={handleChange}
-                  onKeyDown={handleTabKey}
                   value={formData[field] || ""}
                   rows={field === 'summary' || field === 'experience' || field === 'projects' ? 3 : 1}
                 />
+                {field === "summary" && (
+                  <button onClick={generateSummary} className="btn btn-sm btn-outline-primary mt-1" disabled={loadingSummary}>
+                    {loadingSummary ? "Generating..." : "✨ Auto Generate Summary"}
+                  </button>
+                )}
               </div>
             ))}
+
             <div className="mb-3">
               <label className="form-label">Profile Image</label>
               <input type="file" accept="image/*" name="profileImage" className="form-control" onChange={handleChange} />
@@ -217,6 +220,7 @@ export default function ResumeBuilder() {
               {renderSection("Skills", "skills")}
               {renderSection("Projects", "projects")}
               {renderSection("Experience", "experience")}
+              {renderSection("Certifications", "certifications")}
             </div>
           </div>
         </div>
@@ -232,15 +236,8 @@ export default function ResumeBuilder() {
           .template3 { font-family: 'Courier New', monospace; font-size: 13px; }
           .template4 { font-family: 'Segoe UI', Tahoma; line-height: 1.4; }
           .template5 { font-family: Verdana; font-size: 14px; border-left: 5px solid #007bff; padding-left: 15px; }
-          .template6 { font-family: 'Lucida Console'; background: #f0f0f0; padding: 10px; }
-          .template7 { font-family: 'Times New Roman'; font-style: italic; }
-          .template8 { font-family: 'Trebuchet MS'; font-weight: 500; }
         `}</style>
       </div>
     </div>
   );
 }
-
-
-
-
